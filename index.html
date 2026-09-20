@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>I am yours and you are mine</title>
+  <script src="https://cdn.jsdelivr.net/npm/tailwindcss-cdn@3.4.10/tailwindcss.js"></script>
+  
+  <!-- Modern Native Emoji Picker Component -->
+  <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Great+Vibes&display=swap" rel="stylesheet">
+
+  <style>
+    /* Global Font */
+    body {
+      font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+    }
+
+    /* Default Background Theme (Deeply in Love) */
+    .custom-bg {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.7), rgba(88, 28, 135, 0.6)), url('IMG20260902210402.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+    
+    .chat-bg {
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.45) 0%, rgba(88, 28, 135, 0.45) 100%), url('IMG20260902210402.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+    }
+
+    /* Mood Theme Overrides */
+    body.mood-deeply-in-love .custom-bg, body.mood-deeply-in-love .chat-bg {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.7), rgba(88, 28, 135, 0.6)), url('IMG20260902210402.jpg');
+      background-size: cover; background-position: center; background-attachment: fixed;
+    }
+
+    body.mood-missing-baby .custom-bg, body.mood-missing-baby .chat-bg {
+      background: linear-gradient(135deg, rgba(30, 10, 40, 0.8), rgba(120, 20, 80, 0.7)), url('IMG20260902210402.jpg');
+      background-size: cover; background-position: center; background-attachment: fixed;
+    }
+
+    body.mood-romantic-vibes .custom-bg, body.mood-romantic-vibes .chat-bg {
+      background: linear-gradient(135deg, rgba(60, 10, 20, 0.8), rgba(180, 40, 40, 0.6)), url('IMG20260902210402.jpg');
+      background-size: cover; background-position: center; background-attachment: fixed;
+    }
+
+    body.mood-peaceful-cozy .custom-bg, body.mood-peaceful-cozy .chat-bg {
+      background: linear-gradient(135deg, rgba(10, 25, 40, 0.8), rgba(30, 80, 120, 0.6)), url('IMG20260902210402.jpg');
+      background-size: cover; background-position: center; background-attachment: fixed;
+    }
+
+    /* Starlight Mode Overrides */
+    body.starlight-mode .custom-bg {
+      background: linear-gradient(135deg, rgba(5, 5, 15, 0.85), rgba(30, 10, 50, 0.85)), url('IMG20260902210402.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+    }
+
+    /* Glowing Title Box with Sparkling Lights Animation */
+    .sparkle-header-box {
+      position: relative;
+      background: linear-gradient(135deg, rgba(88, 28, 135, 0.4), rgba(236, 72, 153, 0.2));
+      border: 2px solid rgba(244, 114, 182, 0.6);
+      box-shadow: 0 0 25px rgba(236, 72, 153, 0.5), inset 0 0 15px rgba(168, 85, 247, 0.4);
+      backdrop-filter: blur(12px);
+      border-radius: 1.5rem;
+      padding: 0.5rem 1.5rem;
+    }
+
+    @keyframes sparkleGlimmer {
+      0%, 100% { opacity: 0.3; transform: scale(0.8); filter: drop-shadow(0 0 4px rgba(255,255,255,0.4)); }
+      50% { opacity: 1; transform: scale(1.2); filter: drop-shadow(0 0 12px rgba(244,114,182,0.9)); }
+    }
+
+    .sparkle-star-1 {
+      position: absolute;
+      top: -8px;
+      left: 15px;
+      animation: sparkleGlimmer 2s infinite ease-in-out;
+    }
+    .sparkle-star-2 {
+      position: absolute;
+      bottom: -10px;
+      right: 20px;
+      animation: sparkleGlimmer 2.5s infinite ease-in-out 0.5s;
+    }
+    .sparkle-star-3 {
+      position: absolute;
+      top: 50% - 10px;
+      right: -10px;
+      animation: sparkleGlimmer 1.8s infinite ease-in-out 1s;
+    }
+
+    .unrealistic-title {
+      font-family: 'Cinzel Decorative', 'Great Vibes', cursive, serif;
+      letter-spacing: 2px;
+      text-shadow: 0 0 12px rgba(236, 72, 153, 0.9), 
+                  0 0 25px rgba(168, 85, 247, 0.8), 
+                  0 0 35px rgba(236, 72, 153, 0.6);
+    }
+
+    /* Comic Sans Message Font with Extra Large Text Size */
+    .cool-message-font {
+      font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      line-height: 1.6;
+    }
+
+    /* Extra Large 3D Emojis Rendered inside Chat Messages & Bar */
+    .chat-3d-emoji {
+      display: inline-block;
+      width: 3.5rem;
+      height: 3.5rem;
+      vertical-align: middle;
+      margin: 0 4px;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+    }
+
+    .bar-3d-emoji {
+      width: 2.5rem;
+      height: 2.5rem;
+      filter: drop-shadow(0 2px 5px rgba(0,0,0,0.4));
+      transition: transform 0.2s ease;
+    }
+    .bar-3d-emoji:hover {
+      transform: scale(1.25);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(168, 85, 247, 0.4);
+      border-radius: 10px;
+    }
+
+    /* Standard 3D Emoji Picker Styles */
+    emoji-picker {
+      width: 100%;
+      height: 280px;
+    }
+
+    /* Google Chat Style Reaction Toolbar Pill */
+    .gchat-reaction-pill {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(203, 213, 225, 0.6);
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(10px);
+      border-radius: 9999px;
+    }
+
+    /* Floating Heart & Star Background Animations */
+    @keyframes floatUp {
+      0% { transform: translateY(100vh) scale(0.6) rotate(0deg); opacity: 0; }
+      20% { opacity: 0.9; }
+      80% { opacity: 0.9; }
+      100% { transform: translateY(-10vh) scale(1.3) rotate(360deg); opacity: 0; }
+    }
+
+    @keyframes pumpHeart {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(236,72,153,0.5)); }
+      50% { transform: scale(1.35); filter: drop-shadow(0 0 20px rgba(244,114,182,0.9)); }
+    }
+
+    @keyframes sparkleGlitter {
+      0%, 100% { opacity: 0.2; transform: scale(0.5) rotate(0deg); }
+      50% { opacity: 1; transform: scale(1.4) rotate(180deg); filter: drop-shadow(0 0 10px rgba(255,255,255,0.9)); }
+    }
+
+    .floating-item {
+      position: absolute;
+      bottom: -30px;
+      animation: floatUp 7s linear infinite;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .pumping-effect {
+      animation: pumpHeart 1.4s infinite ease-in-out !important;
+    }
+
+    .glitter-star {
+      animation: sparkleGlitter 2s infinite ease-in-out !important;
+    }
+  </style>
+</head>
+<body class="custom-bg h-screen w-screen flex flex-col items-center justify-center font-sans overflow-hidden mood-deeply-in-love">
+
+  <!-- Floating Heart & Glittering Star Background Container -->
+  <div id="heart-container" class="absolute inset-0 overflow-hidden pointer-events-none z-0"></div>
+
+  <!-- Login Screen -->
+  <div id="login-container" class="bg-slate-900/90 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.7)] border border-purple-500/30 w-full max-w-md p-8 flex flex-col space-y-5 mx-4 transition-all z-20">
+    <div class="text-center">
+      <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-fuchsia-400 to-pink-400 tracking-tight">Welcome ✨</h1>
+      <p class="text-xs font-semibold text-purple-300 mt-1 uppercase tracking-widest">Private Lounge</p>
+    </div>
+
+    <form onsubmit="handleLogin(event)" class="flex flex-col space-y-4">
+      <div>
+        <label class="text-xs font-bold text-purple-200 uppercase tracking-wider">Username</label>
+        <input id="login-user" type="text" placeholder="dishant or ishika" class="w-full border border-purple-500/30 rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-fuchsia-500 bg-slate-800/90 text-white placeholder-slate-400 shadow-inner" required>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-purple-200 uppercase tracking-wider">Password</label>
+        <input id="login-pass" type="password" placeholder="••••••••" class="w-full border border-purple-500/30 rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-fuchsia-500 bg-slate-800/90 text-white placeholder-slate-400 shadow-inner" required>
+      </div>
+      <p id="login-error" class="text-xs text-rose-400 hidden text-center font-semibold">Invalid username or password!</p>
+      <button type="submit" class="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-600 text-white text-base font-bold py-3.5 rounded-2xl hover:opacity-95 transition shadow-lg shadow-fuchsia-500/30 active:scale-[0.99]">Login 🚀</button>
+    </form>
+  </div>
+
+  <!-- Main Chat Screen -->
+  <div id="app-container" class="w-full h-full flex flex-col hidden backdrop-blur-sm relative z-10">
+    
+    <!-- Top Symmetrical Header -->
+    <div class="bg-gradient-to-r from-slate-950 via-purple-950 to-slate-950 text-white px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4 shadow-2xl border-b border-fuchsia-500/40 backdrop-blur-xl shrink-0">
+      
+      <!-- Left Branding / Status Group -->
+      <div class="flex items-center space-x-3">
+        <div class="p-2 bg-slate-900/70 border border-fuchsia-500/30 rounded-2xl shadow-lg shadow-fuchsia-500/30 backdrop-blur-md flex items-center justify-center">
+          <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Sparkling%20Heart.png" alt="3D Heart Left" class="w-8 h-8 drop-shadow-[0_0_12px_rgba(236,72,153,0.8)]">
+        </div>
+        <div class="flex flex-col">
+          <div class="flex items-center space-x-2 text-xs">
+            <p id="user-badge" class="text-fuchsia-300 font-bold uppercase tracking-widest"></p>
+            <span class="text-purple-400">•</span>
+            <div id="other-status" class="flex items-center space-x-1.5 font-medium">
+              <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
+              <span id="status-text" class="text-slate-300">Checking...</span>
+            </div>
+          </div>
+          <!-- Live Online-Together Timer -->
+          <span id="online-together-timer" class="text-pink-300 font-bold text-[11px] mt-0.5">✨ Online Together: 0s</span>
+        </div>
+      </div>
+
+      <!-- Center Title in Sparkle Box -->
+      <div class="sparkle-header-box text-center flex items-center justify-center">
+        <!-- Sparkling Lights / Stars Around Box -->
+        <span class="sparkle-star-1 text-xs">✨</span>
+        <span class="sparkle-star-2 text-xs">🌟</span>
+        <span class="sparkle-star-3 text-xs">✨</span>
+        <h1 class="unrealistic-title text-lg sm:text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-200 to-amber-200">
+          I am yours and you are mine
+        </h1>
+      </div>
+
+      <!-- Right Header Action Buttons Symmetrical Group -->
+      <div class="flex items-center space-x-2">
+        <button onclick="openModal('mood-modal')" class="text-xs bg-purple-900/50 hover:bg-purple-800/60 border border-purple-500/40 text-fuchsia-200 px-3 py-2 rounded-xl font-bold transition shadow-sm backdrop-blur-md">🥰 Mood</button>
+        <button onclick="openModal('notes-modal')" class="text-xs bg-purple-900/50 hover:bg-purple-800/60 border border-purple-500/40 text-fuchsia-200 px-3 py-2 rounded-xl font-bold transition shadow-sm backdrop-blur-md">💌 Notes</button>
+        <button onclick="openModal('bucket-modal')" class="text-xs bg-purple-900/50 hover:bg-purple-800/60 border border-purple-500/40 text-fuchsia-200 px-3 py-2 rounded-xl font-bold transition shadow-sm backdrop-blur-md">🌟 Dreams</button>
+        <button onclick="toggleStarlightMode()" class="text-xs bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-200 px-3 py-2 rounded-xl font-bold transition shadow-sm backdrop-blur-md">🌙 Theme</button>
+        <button onclick="logout()" class="text-xs bg-white/10 hover:bg-white/20 border border-white/10 text-pink-200 px-3 py-2 rounded-xl font-bold transition shadow-sm backdrop-blur-md">Logout</button>
+      </div>
+
+    </div>
+
+    <!-- Messages Container -->
+    <div id="message-container" class="chat-bg flex-1 p-6 overflow-y-auto space-y-4">
+      <!-- Messages load dynamically -->
+    </div>
+
+    <!-- Live Typing Indicator -->
+    <div id="typing-indicator" class="hidden px-6 py-1.5 text-xs font-bold text-purple-200 bg-slate-900/90 backdrop-blur-md italic border-t border-purple-500/30 flex items-center space-x-2">
+      <span class="inline-block w-2 h-2 rounded-full bg-fuchsia-500 animate-ping"></span>
+      <span id="typing-text">Someone is typing...</span>
+    </div>
+
+    <!-- Quoted Reply Banner -->
+    <div id="reply-preview-bar" class="hidden px-5 py-2.5 bg-slate-950/95 border-t border-purple-500/40 flex items-center justify-between backdrop-blur-xl z-40">
+      <div class="flex items-center space-x-3 overflow-hidden">
+        <div class="w-1 h-8 bg-fuchsia-500 rounded-full shrink-0"></div>
+        <div class="flex flex-col text-xs truncate">
+          <span id="reply-preview-user" class="font-bold text-fuchsia-300"></span>
+          <span id="reply-preview-text" class="text-purple-200/80 truncate"></span>
+        </div>
+      </div>
+      <button onclick="cancelReply()" class="text-purple-400 hover:text-white p-1 rounded-full text-sm font-bold">✕</button>
+    </div>
+
+    <!-- Horizontal 3D Emoji Bar Above Input -->
+    <div class="bg-slate-950/90 border-t border-purple-500/30 px-4 py-2 flex items-center justify-between space-x-3 backdrop-blur-xl overflow-x-auto shrink-0 z-40">
+      <button type="button" onclick="insertQuickEmoji('❤️')" class="p-1 shrink-0"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Red%20Heart.png" class="bar-3d-emoji" alt="❤️"></button>
+      <button type="button" onclick="insertQuickEmoji('💖')" class="p-1 shrink-0"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Sparkling%20Heart.png" class="bar-3d-emoji" alt="💖"></button>
+      <button type="button" onclick="insertQuickEmoji('💙')" class="p-1 shrink-0"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Blue%20Heart.png" class="bar-3d-emoji" alt="💙"></button>
+      <button type="button" onclick="insertQuickEmoji('💜')" class="p-1 shrink-0"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Purple%20Heart.png" class="bar-3d-emoji" alt="💜"></button>
+      <button type="button" onclick="insertQuickEmoji('🤍')" class="p-1 shrink-0"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/White%20Heart.png" class="bar-3d-emoji" alt="🤍"></button>
+      <button type="button" onclick="insertQuickEmoji('💛')" class="p-1 shrink-0"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Yellow%20Heart.png" class="bar-3d-emoji" alt="💛"></button>
+      <button type="button" onclick="insertQuickEmoji('💚')" class="p-1 shrink-0"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Green%20Heart.png" class="bar-3d-emoji" alt="💚"></button>
+      <button type="button" onclick="insertQuickEmoji('😂')" class="p-1 shrink-0"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Face%20with%20Tears%20of%20Joy.png" class="bar-3d-emoji" alt="😂"></button>
+      <button type="button" onclick="insertQuickEmoji('🥰')" class="p-1 shrink-0"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Smiling%20Face%20with%20Hearts.png" class="bar-3d-emoji" alt="🥰"></button>
+      <button type="button" onclick="insertQuickEmoji('😍')" class="p-1 shrink-0"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Smiling%20Face%20with%20Heart-Eyes.png" class="bar-3d-emoji" alt="😍"></button>
+      <button type="button" onclick="insertQuickEmoji('😘')" class="p-1 shrink-0"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Face%20Blowing%20a%20Kiss.png" class="bar-3d-emoji" alt="😘"></button>
+      <button type="button" onclick="insertQuickEmoji('🥺')" class="p-1 shrink-0"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Pleading%20Face.png" class="bar-3d-emoji" alt="🥺"></button>
+      <button type="button" onclick="insertQuickEmoji('🔥')" class="p-1 shrink-0"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Fire.png" class="bar-3d-emoji" alt="🔥"></button>
+      <button type="button" onclick="insertQuickEmoji('✨')" class="p-1 shrink-0"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Activities/Sparkles.png" class="bar-3d-emoji" alt="✨"></button>
+      <button type="button" onclick="insertQuickEmoji('🎉')" class="p-1 shrink-0"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Activities/Party%20Popper.png" class="bar-3d-emoji" alt="🎉"></button>
+      <button type="button" onclick="insertQuickEmoji('💀')" class="p-1 shrink-0"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Skull.png" class="bar-3d-emoji" alt="💀"></button>
+      <button type="button" onclick="insertQuickEmoji('😎')" class="p-1 shrink-0"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Smiling%20Face%20with%20Sunglasses.png" class="bar-3d-emoji" alt="😎"></button>
+      <button type="button" onclick="insertQuickEmoji('🌸')" class="p-1 shrink-0"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Animals/Cherry%20Blossom.png" class="bar-3d-emoji" alt="🌸"></button>
+      <button type="button" onclick="insertQuickEmoji('🌹')" class="p-1 shrink-0"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Animals/Rose.png" class="bar-3d-emoji" alt="🌹"></button>
+      <button type="button" onclick="insertQuickEmoji('👑')" class="p-1 shrink-0"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Crown.png" class="bar-3d-emoji" alt="👑"></button>
+    </div>
+
+    <!-- Slide-Up Keyboard Drawer -->
+    <div id="emoji-drawer" class="hidden transition-all duration-300 ease-in-out w-full border-t border-purple-500/30 bg-slate-950/95 backdrop-blur-xl shrink-0 z-40">
+      <emoji-picker></emoji-picker>
+    </div>
+
+    <!-- Bottom Message Input Bar -->
+    <form onsubmit="sendMessage(event)" class="p-3 bg-slate-900/95 border-t border-purple-500/20 flex items-center space-x-3 backdrop-blur-xl shrink-0 z-50">
+      <button type="button" onclick="toggleEmojiDrawer(event)" class="p-2.5 text-purple-300 hover:text-fuchsia-400 hover:bg-purple-900/40 rounded-2xl transition-all shrink-0">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </button>
+
+      <button type="button" onclick="sendLovePrompt()" class="p-2.5 text-pink-300 hover:text-pink-400 hover:bg-purple-900/40 rounded-2xl transition-all shrink-0 text-xl" title="Drop Love Question Prompt">💬</button>
+
+      <input id="message-input" type="text" oninput="handleTyping()" placeholder="Say with your open heart and don't shy and hide anything..." class="cool-message-font flex-1 border border-purple-500/30 rounded-2xl px-5 py-3 text-lg outline-none focus:ring-2 focus:ring-fuchsia-500 bg-slate-800/90 text-white placeholder-slate-400/80 shadow-inner tracking-wide" required>
+      <button type="submit" class="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-600 text-white text-base font-bold px-7 py-3 rounded-2xl hover:opacity-95 transition shadow-lg shadow-fuchsia-500/25 active:scale-95 tracking-wide">Send ✨</button>
+    </form>
+
+  </div>
+
+  <!-- MODALS -->
+
+  <!-- 1. Mood Modal -->
+  <div id="mood-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+    <div class="bg-slate-900 border border-purple-500/40 rounded-3xl p-6 max-w-sm w-full shadow-2xl text-white space-y-4">
+      <div class="flex justify-between items-center">
+        <h3 class="text-xl font-bold text-fuchsia-300">Set Your Couple Mood 🥰</h3>
+        <button onclick="closeModal('mood-modal')" class="text-purple-400 hover:text-white font-bold">✕</button>
+      </div>
+      <p class="text-xs text-purple-200">Selecting a mood instantly updates your chat theme!</p>
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="updateMood('🥰 Deeply in Love', 'mood-deeply-in-love')" class="p-3 bg-purple-950/60 hover:bg-purple-900 border border-purple-500/30 rounded-2xl text-xs font-bold transition">🥰 Deeply in Love</button>
+        <button onclick="updateMood('👑 Missing My Baby', 'mood-missing-baby')" class="p-3 bg-purple-950/60 hover:bg-purple-900 border border-purple-500/30 rounded-2xl text-xs font-bold transition">👑 Missing My Baby</button>
+        <button onclick="updateMood('🔥 Romantic Vibes', 'mood-romantic-vibes')" class="p-3 bg-purple-950/60 hover:bg-purple-900 border border-purple-500/30 rounded-2xl text-xs font-bold transition">🔥 Romantic Vibes</button>
+        <button onclick="updateMood('🌙 Peaceful & Cozy', 'mood-peaceful-cozy')" class="p-3 bg-purple-950/60 hover:bg-purple-900 border border-purple-500/30 rounded-2xl text-xs font-bold transition">🌙 Peaceful & Cozy</button>
+      </div>
+      <div id="current-mood-display" class="text-xs text-center font-bold text-pink-300 pt-2"></div>
+    </div>
+  </div>
+
+  <!-- 2. Love Notes Modal -->
+  <div id="notes-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+    <div class="bg-slate-900 border border-purple-500/40 rounded-3xl p-6 max-w-lg w-full shadow-2xl text-white space-y-4 max-h-[85vh] flex flex-col">
+      <div class="flex justify-between items-center shrink-0">
+        <h3 class="text-xl font-bold text-fuchsia-300">💌 Secret Love Notes Capsule</h3>
+        <button onclick="closeModal('notes-modal')" class="text-purple-400 hover:text-white font-bold">✕</button>
+      </div>
+      <div id="notes-list" class="flex-1 overflow-y-auto space-y-3 pr-1">
+        <!-- Notes load here -->
+      </div>
+      <form onsubmit="addNote(event)" class="flex flex-col space-y-2 shrink-0 pt-2 border-t border-purple-500/30">
+        <textarea id="note-text-input" placeholder="Write a secret note..." rows="2" class="bg-slate-800 border border-purple-500/30 rounded-xl p-3 text-xs text-white outline-none resize-none" required></textarea>
+        <button type="submit" class="bg-gradient-to-r from-violet-600 to-pink-600 py-2.5 rounded-xl text-xs font-bold hover:opacity-90">Lock in Capsule 🔒</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. Bucket List Modal -->
+  <div id="bucket-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+    <div class="bg-slate-900 border border-purple-500/40 rounded-3xl p-6 max-w-lg w-full shadow-2xl text-white space-y-4 max-h-[85vh] flex flex-col">
+      <div class="flex justify-between items-center shrink-0">
+        <h3 class="text-xl font-bold text-fuchsia-300">🌟 Shared Bucket List & Dreams</h3>
+        <button onclick="closeModal('bucket-modal')" class="text-purple-400 hover:text-white font-bold">✕</button>
+      </div>
+      <div id="bucket-list" class="flex-1 overflow-y-auto space-y-2 pr-1">
+        <!-- Bucket items load here -->
+      </div>
+      <form onsubmit="addBucketItem(event)" class="flex space-x-2 shrink-0 pt-2 border-t border-purple-500/30">
+        <input id="bucket-input" type="text" placeholder="Add a dream together (e.g. Watch sunset in Paris)..." class="flex-1 bg-slate-800 border border-purple-500/30 rounded-xl px-3 py-2 text-xs text-white outline-none" required>
+        <button type="submit" class="bg-fuchsia-600 px-4 py-2 rounded-xl text-xs font-bold hover:opacity-90">Add Dream</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const USERS = {
+      "dishant": "dishant123",
+      "ishika": "ishika123"
+    };
+
+    const REACTION_EMOJIS = ["❤️", "😂", "🥺", "🔥", "😍", "👍"];
+
+    const EMOJI_3D_MAP = {
+      "❤️": "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Red%20Heart.png",
+      "💖": "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Sparkling%20Heart.png",
+      "💙": "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Blue%20Heart.png",
+      "💜": "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Purple%20Heart.png",
+      "🤍": "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/White%20Heart.png",
+      "💛": "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Yellow%20Heart.png",
+      "💚": "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Green%20Heart.png",
+      "😂": "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Face%20with%20Tears%20of%20Joy.png",
+      "🥰": "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Smiling%20Face%20with%20Hearts.png",
+      "😍": "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Smiling%20Face%20with%20Heart-Eyes.png",
+      "😘": "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Face%20Blowing%20a%20Kiss.png",
+      "🔥": "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Fire.png",
+      "✨": "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Activities/Sparkles.png",
+      "🥺": "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Pleading%20Face.png",
+      "🎉": "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Activities/Party%20Popper.png",
+      "💀": "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Skull.png",
+      "😎": "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Smiling%20Face%20with%20Sunglasses.png",
+      "🌸": "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Animals/Cherry%20Blossom.png",
+      "🌹": "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Animals/Rose.png",
+      "👑": "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Crown.png"
+    };
+
+    const LOVE_PROMPTS = [
+      "💬 Love Prompt: What is your absolute favorite memory of us together?",
+      "💬 Love Prompt: If we could teleport anywhere in the world right now, where would we go?",
+      "💬 Love Prompt: What song always reminds you of me?",
+      "💬 Love Prompt: What was the exact moment you realized you loved me?",
+      "💬 Love Prompt: Describe our future in three words."
+    ];
+
+    function render3DEmojis(text) {
+      let formattedText = text;
+      for (const [emoji, url] of Object.entries(EMOJI_3D_MAP)) {
+        const imgTag = `<img src="${url}" class="chat-3d-emoji" alt="${emoji}">`;
+        formattedText = formattedText.split(emoji).join(imgTag);
+      }
+      return formattedText;
+    }
+
+    let currentUser = "";
+    let otherUser = "";
+    let typingTimeout;
+    let selectedReplyMsg = null;
+
+    // Floating Glittering Stars & Pumping Hearts Background Generator
+    function createBackgroundElement() {
+      const container = document.getElementById('heart-container');
+      if (!container) return;
+      const el = document.createElement('div');
+      
+      const type = Math.random();
+      if (type < 0.5) {
+        // Glittering Star
+        el.className = 'floating-item glitter-star text-xl';
+        el.innerHTML = ['✨', '🌟', '💫'][Math.floor(Math.random() * 3)];
+      } else {
+        // Pumping Heart
+        el.className = 'floating-item pumping-effect text-2xl';
+        el.innerHTML = ['❤️', '💖', '💜', '💗'][Math.floor(Math.random() * 4)];
+      }
+
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.animationDuration = (6 + Math.random() * 4) + 's';
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 9000);
+    }
+    setInterval(createBackgroundElement, 900);
+
+    // Live Online-Together Timer Variables & Synchronizer
+    let onlineTogetherSeconds = 0;
+    let dishantOnline = false;
+    let ishikaOnline = false;
+
+    function formatTimerDisplay(totalSeconds) {
+      const hrs = Math.floor(totalSeconds / 3600);
+      const mins = Math.floor((totalSeconds % 3600) / 60);
+      const secs = totalSeconds % 60;
+      if (hrs > 0) {
+        return `${hrs}h ${mins}m ${secs}s`;
+      } else if (mins > 0) {
+        return `${mins}m ${secs}s`;
+      } else {
+        return `${secs}s`;
+      }
+    }
+
+    function updateOnlineTogetherCounterUI() {
+      const el = document.getElementById('online-together-timer');
+      if (el) {
+        el.innerText = `✨ Online Together: ${formatTimerDisplay(onlineTogetherSeconds)}`;
+      }
+    }
+
+    setInterval(() => {
+      if (dishantOnline && ishikaOnline) {
+        onlineTogetherSeconds++;
+        updateOnlineTogetherCounterUI();
+        if (onlineTogetherSeconds % 10 === 0 && window.onlineTimerRef) {
+          window.onlineTimerRef.set(onlineTogetherSeconds);
+        }
+      }
+    }, 1000);
+
+    function toggleStarlightMode() {
+      document.body.classList.toggle('starlight-mode');
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+      document.getElementById(id).classList.add('flex');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('flex');
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const user = document.getElementById('login-user').value.toLowerCase().trim();
+      const pass = document.getElementById('login-pass').value.trim();
+      const errorMsg = document.getElementById('login-error');
+
+      if (USERS[user] && USERS[user] === pass) {
+        currentUser = user.charAt(0).toUpperCase() + user.slice(1);
+        otherUser = user === "dishant" ? "Ishika" : "Dishant";
+
+        errorMsg.classList.add('hidden');
+        document.getElementById('login-container').classList.add('hidden');
+        document.getElementById('app-container').classList.remove('hidden');
+        document.getElementById('user-badge').innerText = `${currentUser}`;
+        
+        initializeChat();
+      } else {
+        errorMsg.classList.remove('hidden');
+      }
+    }
+
+    function logout() {
+      location.reload();
+    }
+
+    function toggleEmojiDrawer(e) {
+      if (e) e.stopPropagation();
+      const drawer = document.getElementById('emoji-drawer');
+      drawer.classList.toggle('hidden');
+      const container = document.getElementById('message-container');
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function insertQuickEmoji(unicode) {
+      const input = document.getElementById('message-input');
+      input.value += unicode;
+      input.focus();
+      handleTyping();
+    }
+
+    function sendLovePrompt() {
+      const randomPrompt = LOVE_PROMPTS[Math.floor(Math.random() * LOVE_PROMPTS.length)];
+      chatRef.push({
+        user: currentUser,
+        text: randomPrompt,
+        timestamp: Date.now(),
+        seen: false
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const picker = document.querySelector('emoji-picker');
+      if (picker) {
+        picker.addEventListener('emoji-click', event => {
+          const input = document.getElementById('message-input');
+          input.value += event.detail.unicode;
+          input.focus();
+          handleTyping();
+        });
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      const drawer = document.getElementById('emoji-drawer');
+      const toggleBtn = e.target.closest('button[onclick="toggleEmojiDrawer(event)"]');
+      const isInsideDrawer = e.target.closest('emoji-picker');
+
+      if (drawer && !drawer.classList.contains('hidden') && !toggleBtn && !isInsideDrawer) {
+        drawer.classList.add('hidden');
+      }
+    });
+
+    let chatRef, presenceRef, typingRef, moodRef, notesRef, bucketRef;
+
+    function handleTyping() {
+      if (!typingRef) return;
+      typingRef.child(currentUser).set(true);
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => {
+        typingRef.child(currentUser).set(false);
+      }, 2000);
+    }
+
+    function setReplyTarget(msgKey, username, text) {
+      selectedReplyMsg = { key: msgKey, user: username, text: text };
+      document.getElementById('reply-preview-user').innerText = `Replying to ${username}`;
+      document.getElementById('reply-preview-text').innerText = text;
+      document.getElementById('reply-preview-bar').classList.remove('hidden');
+      document.getElementById('message-input').focus();
+    }
+
+    function cancelReply() {
+      selectedReplyMsg = null;
+      document.getElementById('reply-preview-bar').classList.add('hidden');
+    }
+
+    function toggleReaction(msgKey, emoji) {
+      const msgReactionRef = chatRef.child(msgKey).child('reactions').child(currentUser);
+      msgReactionRef.once('value', (snapshot) => {
+        if (snapshot.val() === emoji) {
+          msgReactionRef.remove();
+        } else {
+          msgReactionRef.set(emoji);
+        }
+      });
+    }
+
+    function updateMood(moodText, themeClass) {
+      if (moodRef) {
+        moodRef.child(currentUser).set({ text: moodText, theme: themeClass });
+        applyTheme(themeClass);
+        document.getElementById('current-mood-display').innerText = `Your Current Mood: ${moodText}`;
+      }
+    }
+
+    function applyTheme(themeClass) {
+      document.body.classList.remove('mood-deeply-in-love', 'mood-missing-baby', 'mood-romantic-vibes', 'mood-peaceful-cozy');
+      if (themeClass) {
+        document.body.classList.add(themeClass);
+      }
+    }
+
+    function addNote(e) {
+      e.preventDefault();
+      const text = document.getElementById('note-text-input').value.trim();
+      if (text && notesRef) {
+        notesRef.push({ user: currentUser, text, timestamp: Date.now() });
+        document.getElementById('note-text-input').value = '';
+      }
+    }
+
+    function addBucketItem(e) {
+      e.preventDefault();
+      const text = document.getElementById('bucket-input').value.trim();
+      if (text && bucketRef) {
+        bucketRef.push({ text, completed: false, addedBy: currentUser });
+        document.getElementById('bucket-input').value = '';
+      }
+    }
+
+    function toggleBucketItem(key, currentStatus) {
+      if (bucketRef) {
+        bucketRef.child(key).update({ completed: !currentStatus });
+      }
+    }
+
+    function initializeChat() {
+      const firebaseConfig = {
+        apiKey: "AIzaSyBmvnFkg1Jay7CGyDSG3mkOsY9UM8WDzcg",
+        authDomain: "we-love-each-other.firebaseapp.com",
+        databaseURL: "https://we-love-each-other-default-rtdb.firebaseio.com",
+        projectId: "we-love-each-other",
+        storageBucket: "we-love-each-other.firebasestorage.app",
+        messagingSenderId: "634100929310",
+        appId: "1:634100929310:web:7dc49118793e7fc960af0f",
+        measurementId: "G-9CH735FKGP"
+      };
+
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      
+      const db = firebase.database();
+      chatRef = db.ref('messages');
+      presenceRef = db.ref('presence');
+      typingRef = db.ref('typing');
+      moodRef = db.ref('moods');
+      notesRef = db.ref('notes');
+      bucketRef = db.ref('bucket');
+      window.onlineTimerRef = db.ref('onlineTimerSeconds');
+
+      window.onlineTimerRef.on('value', (snap) => {
+        const val = snap.val();
+        if (typeof val === 'number') {
+          onlineTogetherSeconds = val;
+          updateOnlineTogetherCounterUI();
+        }
+      });
+
+      const myPresenceRef = presenceRef.child(currentUser);
+      const connectedRef = db.ref('.info/connected');
+
+      connectedRef.on('value', (snap) => {
+        if (snap.val() === true) {
+          myPresenceRef.onDisconnect().set(false);
+          myPresenceRef.set(true);
+        }
+      });
+
+      presenceRef.child("Dishant").on('value', (snap) => {
+        dishantOnline = snap.val() === true;
+      });
+
+      presenceRef.child("Ishika").on('value', (snap) => {
+        ishikaOnline = snap.val() === true;
+      });
+
+      presenceRef.child(otherUser).on('value', (snap) => {
+        const isOnline = snap.val() === true;
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+
+        if (isOnline) {
+          statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]";
+          statusText.innerText = `${otherUser} online`;
+          statusText.className = "text-emerald-300 font-semibold";
+        } else {
+          statusDot.className = "w-2.5 h-2.5 rounded-full bg-slate-500";
+          statusText.innerText = `${otherUser} offline`;
+          statusText.className = "text-slate-400";
+        }
+      });
+
+      typingRef.child(otherUser).on('value', (snap) => {
+        const isTyping = snap.val() === true;
+        const indicator = document.getElementById('typing-indicator');
+        const typingText = document.getElementById('typing-text');
+
+        if (isTyping) {
+          typingText.innerText = `${otherUser} is typing...`;
+          indicator.classList.remove('hidden');
+        } else {
+          indicator.classList.add('hidden');
+        }
+      });
+
+      notesRef.on('value', (snapshot) => {
+        const list = document.getElementById('notes-list');
+        list.innerHTML = '';
+        snapshot.forEach((childSnap) => {
+          const item = childSnap.val();
+          list.innerHTML += `
+            <div class="bg-slate-800/80 border border-purple-500/30 rounded-2xl p-3 flex flex-col space-y-1">
+              <p class="text-xs text-white font-medium">"${item.text}"</p>
+              <span class="text-[10px] text-pink-300 font-bold">Locked by ${item.user}</span>
+            </div>
+          `;
+        });
+      });
+
+      bucketRef.on('value', (snapshot) => {
+        const list = document.getElementById('bucket-list');
+        list.innerHTML = '';
+        snapshot.forEach((childSnap) => {
+          const key = childSnap.key;
+          const item = childSnap.val();
+          list.innerHTML += `
+            <div onclick="toggleBucketItem('${key}', ${item.completed})" class="bg-slate-800/80 border border-purple-500/30 rounded-xl p-3 flex items-center justify-between cursor-pointer hover:bg-slate-800 transition">
+              <span class="text-xs ${item.completed ? 'line-through text-purple-400' : 'text-white font-medium'}">${item.text}</span>
+              <span class="text-xs">${item.completed ? '✅' : '⬜'}</span>
+            </div>
+          `;
+        });
+      });
+
+      window.sendMessage = function(e) {
+        e.preventDefault();
+        const input = document.getElementById('message-input');
+        const text = input.value.trim();
+
+        if (text !== "") {
+          const payload = {
+            user: currentUser,
+            text: text,
+            timestamp: Date.now(),
+            seen: false
+          };
+
+          if (selectedReplyMsg) {
+            payload.replyTo = selectedReplyMsg;
+          }
+
+          chatRef.push(payload);
+          input.value = "";
+          cancelReply();
+          typingRef.child(currentUser).set(false);
+        }
+      };
+
+      chatRef.on('child_added', (snapshot) => {
+        const key = snapshot.key;
+        const data = snapshot.val();
+        checkAndMarkSeen(key, data);
+        renderOrUpdateMessage(key, data);
+      });
+
+      chatRef.on('child_changed', (snapshot) => {
+        const key = snapshot.key;
+        const data = snapshot.val();
+        renderOrUpdateMessage(key, data);
+      });
+    }
+
+    function checkAndMarkSeen(key, data) {
+      if (data.user !== currentUser && !data.seen) {
+        chatRef.child(key).update({ seen: true });
+      }
+    }
+
+    function renderOrUpdateMessage(key, data) {
+      const container = document.getElementById('message-container');
+      const isMe = data.user === currentUser;
+      let msgWrapper = document.getElementById(`msg-${key}`);
+
+      if (!msgWrapper) {
+        msgWrapper = document.createElement('div');
+        msgWrapper.id = `msg-${key}`;
+        container.appendChild(msgWrapper);
+      }
+
+      msgWrapper.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} group relative mb-3`;
+
+      let replyHeaderHtml = '';
+      if (data.replyTo) {
+        replyHeaderHtml = `
+          <div class="mb-2 p-2.5 rounded-xl bg-black/30 border-l-4 border-fuchsia-400 text-xs text-purple-200 backdrop-blur-sm">
+            <span class="font-bold text-fuchsia-300">@${data.replyTo.user}</span>
+            <p class="truncate opacity-80">${data.replyTo.text}</p>
+          </div>
+        `;
+      }
+
+      let reactionPickerHtml = REACTION_EMOJIS.map(e => `
+        <button type="button" onclick="toggleReaction('${key}', '${e}')" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-200 transition text-2xl">
+          ${e}
+        </button>
+      `).join('');
+
+      let activeReactionsHtml = '';
+      if (data.reactions) {
+        const counts = {};
+        Object.values(data.reactions).forEach(e => {
+          counts[e] = (counts[e] || 0) + 1;
+        });
+
+        const badges = Object.entries(counts).map(([emoji, count]) => `
+          <span class="inline-flex items-center space-x-1.5 bg-slate-900/95 border border-purple-500/40 rounded-full px-3 py-1 text-sm text-white shadow-md">
+            <span class="text-lg">${emoji}</span>
+            ${count > 1 ? `<span class="text-xs text-fuchsia-300 font-bold">${count}</span>` : ''}
+          </span>
+        `).join('');
+
+        if (badges) {
+          activeReactionsHtml = `<div class="flex items-center space-x-1.5 mt-1.5 z-10">${badges}</div>`;
+        }
+      }
+
+      const dateObj = new Date(data.timestamp || Date.now());
+      const timeString = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      let seenStatusHtml = '';
+      if (isMe) {
+        if (data.seen) {
+          seenStatusHtml = `<span class="text-[10px] text-pink-300 font-semibold tracking-wide">Seen ✓✓</span>`;
+        } else {
+          seenStatusHtml = `<span class="text-[10px] text-purple-400/80 font-semibold tracking-wide">Sent ✓</span>`;
+        }
+      }
+
+      const renderedText = render3DEmojis(data.text);
+
+      msgWrapper.innerHTML = `
+        <div class="flex items-center space-x-2 mb-1 px-1">
+          <span class="text-[10px] text-purple-200 font-bold bg-slate-900/90 backdrop-blur-md rounded-full px-2.5 py-0.5 shadow-sm border border-purple-500/20">${data.user}</span>
+          <span class="text-[10px] text-purple-300/80 font-medium">${timeString}</span>
+        </div>
+        
+        <div class="relative flex items-center ${isMe ? 'flex-row-reverse' : 'flex-row'} group">
+          <div class="cool-message-font max-w-[80vw] sm:max-w-[450px] px-6 py-4 rounded-3xl text-xl shadow-lg relative ${
+            isMe 
+              ? 'bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-600 text-white rounded-br-xs shadow-fuchsia-500/20' 
+              : 'bg-slate-900/95 backdrop-blur-md text-white border border-purple-500/30 rounded-bl-xs shadow-purple-900/20'
+          }">
+            ${replyHeaderHtml}
+            <div>${renderedText}</div>
+          </div>
+
+          <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center space-x-1 mx-2 shrink-0 z-30">
+            <button onclick="setReplyTarget('${key}', '${data.user}', '${data.text.replace(/'/g, "\\'")}')" class="p-2 bg-slate-800/90 hover:bg-purple-800 text-purple-300 rounded-full border border-purple-500/30 shadow-md" title="Reply">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="gchat-reaction-pill absolute -top-14 ${isMe ? 'right-0' : 'left-0'} opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center px-2 py-1 space-x-1 z-40 pointer-events-none group-hover:pointer-events-auto">
+            ${reactionPickerHtml}
+          </div>
+        </div>
+
+        <div class="mt-1 flex items-center space-x-1 px-1">
+          ${seenStatusHtml}
+        </div>
+
+        ${activeReactionsHtml}
+      `;
+
+      container.scrollTop = container.scrollHeight;
+    }
+  </script>
+
+</body>
+</html>
